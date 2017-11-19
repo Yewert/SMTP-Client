@@ -41,8 +41,14 @@ def main():
             port = int(lines[1])
             login = re.sub(r'[\r\n]', '', lines[2])
             password = re.sub(r'[\r\n]', '', lines[3])
-    except (FileNotFoundError, PermissionError, ValueError):
-        print("Could not properly load configuration file")
+    except FileNotFoundError:
+        print("Could not find configuration file")
+        sys.exit(1)
+    except PermissionError:
+        print("Did not have enough permissions to read configuration file")
+        sys.exit(1)
+    except (IndexError, ValueError):
+        print("Configuration file had wrong formatting (see 'readme.md'")
         sys.exit(1)
 
     try:
@@ -53,7 +59,9 @@ def main():
             pattern = re.compile(r'^([\w\d]+):([\w\d]+);')
             loader = aliasloader.AliasLoader(lambda x: pattern.match(x))
             aliases = loader.get_alias_substitution_list(lines)
-    except (FileNotFoundError, PermissionError, ValueError):
+    except (FileNotFoundError, PermissionError, ValueError) as e:
+        if result_of_parsing.debug:
+            print(str(e))
         aliases = []
 
     if result_of_parsing.pathToSingleMail is not None:

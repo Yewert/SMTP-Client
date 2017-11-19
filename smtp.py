@@ -47,7 +47,7 @@ class SMTP:
             soc.connect((self.__address, self.__port))
         except socket.timeout:
             soc.close()
-            raise connexceptions.ConnectionTimedOutException(
+            raise connexceptions.ConnectionException(
                 "Timed out while establishing connection")
         except Exception as e:
             soc.close()
@@ -114,11 +114,11 @@ class SMTP:
         try:
             connection_socket.sendall(data_to_transmit)
         except socket.timeout:
-            raise connexceptions.ConnectionTimedOutException("Connection"
-                                                             " timed out"
-                                                             " while trying"
-                                                             " to send"
-                                                             " data to server")
+            raise connexceptions.ConnectionException("Connection"
+                                                     " timed out"
+                                                     " while trying"
+                                                     " to send"
+                                                     " data to server")
         except socket.error as e:
             raise connexceptions.ConnectionException(str(e))
 
@@ -130,43 +130,36 @@ class SMTP:
                 print("<---" + data.decode())
         except socket.timeout:
             connection_socket.close()
-            raise connexceptions.ConnectionTimedOutException("Connection"
-                                                             " timed out"
-                                                             " while trying"
-                                                             " to receive"
-                                                             " a reply"
-                                                             " from server")
+            raise connexceptions.ConnectionException("Connection"
+                                                     " timed out"
+                                                     " while trying"
+                                                     " to receive"
+                                                     " a reply"
+                                                     " from server")
         except socket.error as e:
             connection_socket.close()
             raise connexceptions.ConnectionException(str(e))
 
         if data == b'':
             connection_socket.close()
-            raise connexceptions.ConnectionShutDownException("Connection"
-                                                             " shut down by "
-                                                             "the other side")
+            raise connexceptions.ConnectionException("Connection"
+                                                     " shut down by "
+                                                     "the other side")
         self.__handle_reply_code(data)
         connection_socket.settimeout(None)
 
-    def __handle_reply_code(self, message):
+    @staticmethod
+    def __handle_reply_code(message):
         code = message[:3].decode()
         if code[0] == '2' or code[0] == '3':
             return
         if code[0] == '4':
-            raise ClientSideException(message[3:].decode().lstrip())
+            raise SmtpException(message[3:].decode().lstrip())
         if code[0] == '5':
-            raise ServerSideException(message[3:].decode().lstrip())
+            raise SmtpException(message[3:].decode().lstrip())
 
 
 class SmtpException(Exception):
-    pass
-
-
-class ClientSideException(SmtpException):
-    pass
-
-
-class ServerSideException(SmtpException):
     pass
 
 
