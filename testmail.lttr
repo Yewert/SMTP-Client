@@ -1,0 +1,7 @@
+to: fucky4nd3x@yandex.ru, georgy.borovinskikh@gmail.com
+type: html
+subject: test
+attachment: ./testmail.lttr
+<body>
+<p><em>hi %Nicholas%</em></p>
+</body>
