@@ -79,7 +79,6 @@ def main():
             parser.parse_lines(iterate_file(str(path_to_mail)))
             mails = list(map(lambda x: mimemail.Mail(aliases, login, *x),
                              parser.get_letter_attributes()))
-            print("x")
         except letterparser.MailParsingException as e:
             print("'{}' failed with error : '{}'".format(path_to_mail, str(e)))
             sys.exit(1)
