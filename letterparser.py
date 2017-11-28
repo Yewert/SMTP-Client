@@ -3,7 +3,9 @@ import pathlib
 
 
 class LetterParser:
-    def __init__(self, path):
+    # {pattern: email(default): sub
+    def __init__(self, path, aliases):
+        self.__aliases = aliases
         self.__subject = None
         self.__recipients = None
         self.__type = None
@@ -21,6 +23,9 @@ class LetterParser:
     def parse_lines(self, lines):
         for index, line in lines:
             if index == 0:
+                for pattern in self.__aliases.keys():
+                    line = re.sub("%{}%".format(pattern),
+                                  self.__aliases[pattern](None), line)
                 match = LetterParser.__recipient_pattern.match(line)
                 if match is None:
                     raise MailParsingException("Expected to"
@@ -58,8 +63,8 @@ class LetterParser:
     def get_letter_attributes(self):
         for recipient in self.__recipients:
             yield self.__path, recipient, self.__type, self.__subject, \
-                  self.__attachments, lambda: \
-                  (yield from self.__get_text_function())
+                self.__attachments, lambda: \
+                (yield from self.__get_text_function())
 
     def __get_text_function(self):
         with open(self.__path, 'rb') as file:

@@ -1,0 +1,10 @@
+{
+  "email":{
+    "default": "blazer.andrew@gmail.com, georgy.borovinskikh@gmail.com"
+  },
+  "Nicholas":
+  {
+    "default": "Николай",
+    "blazer.andrew@gmail.com": "Peter"
+  }
+}

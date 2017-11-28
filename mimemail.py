@@ -1,5 +1,6 @@
 import base64
 import random
+import re
 import string
 import quopri
 from functools import reduce
@@ -10,8 +11,8 @@ class Mail:
                  attachments,
                  get_text):
 
-        self.__name = name + ' to ' + recipient
         self.__aliases = aliases
+        self.__name = name + ' to ' + recipient
         self.__sender = sender
         self.__type = markup_type
         self.__recipient = recipient
@@ -48,17 +49,18 @@ class Mail:
     def get_bytes(self):
         yield self.__header
         lines = reduce(lambda x, y: x + y, self.__get_text()).decode()
-        for regex, substitute in self.__aliases:
-            lines = regex.sub(substitute, lines)
+        for pattern in self.__aliases.keys():
+            lines = re.sub('%{}%'.format(pattern),
+                           self.__aliases[pattern](self.recipient), lines)
         lines = quopri.encodestring(lines.encode())
         if self.__type == "html":
             yield 'Content-Type: text/html; charset=utf-8\r\n' \
                   'Content-Transfer-Encoding: quoted-printable\r\n\r\n' \
-                      .encode() + lines
+                .encode() + lines
         if self.__type == "plain":
             yield 'Content-Type: text/plain; charset=utf-8\r\n' \
                   'Content-Transfer-Encoding: quoted-printable\r\n\r\n' \
-                      .encode() + lines
+                .encode() + lines
         yield b'\r\n'
         for index_and_attachment in self.__indexes_and_attachments:
             yield self.__boundary.encode() + b'\r\n'
@@ -87,7 +89,7 @@ class Mail:
               'Content-Disposition: attachment; ' \
               'filename="{}"\r\n' \
               'Content-transfer-encoding: base64\r\n\r\n'.format(
-               attachment.name).encode()
+                  attachment.name).encode()
         try:
             with open(str(attachment), 'br') as file:
                 yield base64.b64encode(file.read())

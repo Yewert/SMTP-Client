@@ -20,7 +20,7 @@ Server, port, login and password are stored in first four lines of
 
 ### Aliases
 
-Aliases are stored in optional file `aliases.usrinf`
+Aliases are stored in optional file `aliases.json`
 
 Format of this file:
 

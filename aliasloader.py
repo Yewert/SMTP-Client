@@ -1,17 +1,11 @@
-import re
+import json
 
 
 class AliasLoader:
-    def __init__(self, alias_extracter):
-        self.__extract_alias = alias_extracter
-
-    def get_alias_substitution_list(self, lines):
-        alias_patterns_and_replacements = []
-        for line in lines:
-            match = self.__extract_alias(line)
-            if match is None:
-                continue
-            alias_patterns_and_replacements.append((re.compile('%{}%'.format(
-                match.group(1))),
-                                                    match.group(2)))
-        return alias_patterns_and_replacements
+    def get_dict(self, content):
+        raw_aliases = json.loads(content.decode(), 'UTF-8')
+        aliases = {}
+        for pattern in raw_aliases.keys():
+            aliases[pattern] = lambda x, p=pattern: raw_aliases[p][x] if\
+                x in raw_aliases[p].keys() else raw_aliases[p]["default"]
+        return aliases

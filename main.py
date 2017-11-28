@@ -1,6 +1,4 @@
-import re
 import sys
-
 import aliasloader
 import smtp
 import mimemail
@@ -12,7 +10,7 @@ import pathlib
 def iterate_file(path):
     with open(path, 'rb') as file:
         for index, line in enumerate(file):
-            yield index, re.sub(r'[\n\r]', '', line.decode())
+            yield index, line.decode().strip('\n\r')
 
 
 def main():
@@ -37,10 +35,10 @@ def main():
         user_info.resolve()
         with open(str(user_info), 'r') as ui:
             lines = ui.readlines()
-            server = re.sub(r'[\r\n]', '', lines[0])
+            server = lines[0].strip('\r\n')
             port = int(lines[1])
-            login = re.sub(r'[\r\n]', '', lines[2])
-            password = re.sub(r'[\r\n]', '', lines[3])
+            login = lines[2].strip('\r\n')
+            password = lines[3].strip('\r\n')
     except FileNotFoundError:
         print("Could not find configuration file")
         sys.exit(1)
@@ -52,14 +50,11 @@ def main():
         sys.exit(1)
 
     try:
-        aliases_path = pathlib.Path("./aliases.usrinf")
+        aliases_path = pathlib.Path("./aliases.json")
         aliases_path.resolve()
         with open(str(aliases_path), 'rb') as al:
-            lines = list(map(lambda x: x.decode(), al.readlines()))
-            pattern = re.compile(r'^([\w\d]+):([\w\d]+);')
-            loader = aliasloader.AliasLoader(lambda x: pattern.match(x))
-            aliases = loader.get_alias_substitution_list(lines)
-    except (FileNotFoundError, PermissionError, ValueError) as e:
+            aliases = aliasloader.AliasLoader().get_dict(al.read())
+    except (OSError, IOError) as e:
         if result_of_parsing.debug:
             print(str(e))
         aliases = []
@@ -75,7 +70,7 @@ def main():
             print("Not a file")
             sys.exit(1)
         try:
-            parser = letterparser.LetterParser(str(path_to_mail))
+            parser = letterparser.LetterParser(str(path_to_mail), aliases)
             parser.parse_lines(iterate_file(str(path_to_mail)))
             mails = list(map(lambda x: mimemail.Mail(aliases, login, *x),
                              parser.get_letter_attributes()))
@@ -99,11 +94,10 @@ def main():
             if path.suffix != '.lttr':
                 continue
             try:
-                parser = letterparser.LetterParser(str(path))
+                parser = letterparser.LetterParser(str(path), aliases)
                 parser.parse_lines(str(path))
-                mails_to_append = list(map(lambda x: mimemail.Mail(aliases,
-                                                                   login, *x),
-                                           parser.get_letter_attributes()))
+                mails_to_append = list(map(lambda x: mimemail.Mail(
+                    aliases, login, *x), parser.get_letter_attributes()))
             except letterparser.MailParsingException as e:
                 print("'{}' failed with error : '{}'".format(path, str(e)))
             else:

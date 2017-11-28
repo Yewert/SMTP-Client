@@ -1,4 +1,4 @@
-to: fucky4nd3x@yandex.ru, georgy.borovinskikh@gmail.com
+to: %email%
 type: html
 subject: test
 attachment: ./testmail.lttr
