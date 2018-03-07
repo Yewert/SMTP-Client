@@ -52,14 +52,14 @@ class Mail:
         for pattern in self.__aliases.keys():
             lines = re.sub('%{}%'.format(pattern),
                            self.__aliases[pattern](self.recipient), lines)
-        lines = quopri.encodestring(lines.encode())
+        lines = base64.b64encode(lines.encode())
         if self.__type == "html":
             yield 'Content-Type: text/html; charset=utf-8\r\n' \
-                  'Content-Transfer-Encoding: quoted-printable\r\n\r\n' \
+                  'Content-Transfer-Encoding: base64\r\n\r\n' \
                 .encode() + lines
         if self.__type == "plain":
             yield 'Content-Type: text/plain; charset=utf-8\r\n' \
-                  'Content-Transfer-Encoding: quoted-printable\r\n\r\n' \
+                  'Content-Transfer-Encoding: base64\r\n\r\n' \
                 .encode() + lines
         yield b'\r\n'
         for index_and_attachment in self.__indexes_and_attachments:

@@ -1,7 +1,9 @@
-to: %email%
-type: html
-subject: test
-attachment: ./testmail.lttr
-<body>
-<p><em>hi %Nicholas%</em></p>
-</body>
+to: blazer.andrew@gmail.com
+type: plain
+subject: привет
+attachment: C:\Users\Денис\Desktop\bEJaSmtBNVFiczBLQUpRQm11QkxndllRZm0hMHVDTEJ2QktCZEIwSkNKUUpzSjZTbUhTWg,,.gif
+АГА!
+..
+.
+
+.
